@@ -9,6 +9,8 @@ set(FLICKFLOW_SOURCE
 
 # FlickFlow header
 set(FLICKFLOW_HEADER
+    fluidDynamics.h
+    shaderUtils.h
     slab.h
 )
 

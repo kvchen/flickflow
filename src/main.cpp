@@ -1,10 +1,11 @@
 // Standard includes
 #include <stdlib.h>
-#include <vector>
 
 // OpenGL includes
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
+#include "fluidDynamics.h"
 
 
 void simulate() {

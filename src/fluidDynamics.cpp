@@ -1,9 +1,8 @@
-#include <gl/glew.h>
-#include "slab.h"
-
+#include "fluidDynamics.h"
 
 
 void advect() {
+
 
 }
 
