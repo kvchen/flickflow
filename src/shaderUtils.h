@@ -22,7 +22,6 @@
 
 #include <iostream>
 #include <vector>
-#include "png.h"
 
 inline char *textFileRead(const char *fn)
 {
@@ -141,26 +140,5 @@ inline GLuint loadShaders(const char* vert, const std::vector<std::string>& frag
     return loadShaders(std::vector<std::string>(1, vert), fragList);
 }
 
-
-static GLuint makeTex(const char* path)
-{
-    PNG png;
-    int r = PNGParser::load(path, png);
-    if(r != 0) return 0;
-    GLuint textureID;
-
-    glGenTextures(1, &textureID);
-
-    glBindTexture(GL_TEXTURE_2D, textureID);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, png.width, png.height, 1,
-            GL_RGBA, GL_UNSIGNED_BYTE, png.pixels.data());
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-    return textureID;
-}
 
 #endif	/* SHADERUTILS_H */
