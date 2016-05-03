@@ -26,5 +26,7 @@ void computeJacobi(VectorField pressure, VectorField divergence, VectorField out
                    float alpha, float beta);
 void computeVorticity(VectorField velocity, VectorField output,
                       float scale);
-void splat(VectorField output,
+void computeVorticityForce(VectorField velocity, VectorField vorticity, VectorField output,
+                           float scale, float timestep, float epsilon, float curlX, float curlY);
+void splat(VectorField source, VectorField output,
            int x, int y, float radius, float fillX, float fillY, float fillZ);
