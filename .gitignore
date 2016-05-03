@@ -4,6 +4,9 @@
 # Build directory
 build
 
+# Vendor headers
+src/vendor
+
 # Compiled Object files
 *.slo
 *.lo

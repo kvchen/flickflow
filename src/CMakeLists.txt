@@ -22,6 +22,7 @@ include_directories(
   ${GLEW_INCLUDE_DIRS}
   ${GLFW_INCLUDE_DIRS}
   ${FREETYPE_INCLUDE_DIRS}
+  ${LEAP_INCLUDE_DIRS}
 )
 
 #-------------------------------------------------------------------------------
@@ -46,6 +47,7 @@ target_link_libraries( flickflow
     glfw3 ${GLFW_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${FREETYPE_LIBRARIES}
+    ${LEAP_LIBRARIES}
 )
 
 #-------------------------------------------------------------------------------
