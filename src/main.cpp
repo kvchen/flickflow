@@ -8,6 +8,11 @@
 #include "fluidDynamics.h"
 
 
+#define DEFAULT_WIDTH 640
+#define DEFAULT_HEIGHT 480
+
+
+
 void simulate() {
     // We ping-pong back and forth between two buffers on the GPU
     // u = advect(u);
@@ -27,7 +32,7 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    window = glfwCreateWindow(640, 480, "FlickFlow", monitor, NULL);
+    window = glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "FlickFlow", monitor, NULL);
 
     if (!window) {
         glfwTerminate();
@@ -35,6 +40,13 @@ int main(int argc, char** argv) {
     }
 
     glfwMakeContextCurrent(window);
+    if (glewInit() != GLEW_OK) {
+        return -1;
+    }
+
+    printf("%s", glGetString(GL_VERSION));
+
+    loadShaders();
 
     while (!glfwWindowShouldClose(window))
     {
