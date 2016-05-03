@@ -125,13 +125,14 @@ inline GLuint loadShaders(const std::vector<std::string>& vertList, const std::v
     glLinkProgram(p);
     printProgramInfoLog(p);
 
-    glUseProgram(p);
+    // glUseProgram(p);
 
     return p;
 }
 
 inline GLuint loadShaders(const char* vert, const char* frag)
 {
+    printf("Compiling shader: %s\n", frag);
     return loadShaders(std::vector<std::string>(1, vert), std::vector<std::string>(1, frag));
 }
 
