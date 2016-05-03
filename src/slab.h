@@ -1,18 +1,22 @@
 #include <GL/glew.h>
 
 
-typedef struct Framebuffer_ {
+typedef struct VectorField_ {
     GLuint handle;
-    GLuint texHandle;
+    GLuint textureHandle;
     int numComponents;
-} Framebuffer;
+} VectorField;
 
 
 typedef struct Slab_ {
-    Framebuffer ping;
-    Framebuffer pong;
+    VectorField read;
+    VectorField write;
 } Slab;
 
 
-void swapFrameBuffers(Slab* slab);
-void fillFrameBuffer(Framebuffer fb, float v);
+Slab createSlab(GLsizei width, GLsizei height, int numComponents);
+VectorField createVectorField(GLsizei width, GLsizei height, int numComponents);
+
+void swapVectorFields(Slab* slab);
+void fillVectorField(VectorField vf, float v);
+GLuint createQuad();
