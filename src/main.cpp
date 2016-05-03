@@ -37,7 +37,6 @@ void resize(GLFWwindow* window, int width, int height) {
 
 
 int main(int argc, char** argv) {
-    // GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     GLFWwindow* window;
 
     if (!glfwInit()) {
@@ -49,6 +48,14 @@ int main(int argc, char** argv) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    // const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    //
+    // glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+    // glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+    // glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+    // glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
     window = glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "FlickFlow", NULL, NULL);
     if (!window) {
@@ -78,13 +85,13 @@ int main(int argc, char** argv) {
     GLuint visualize = loadShaders("../shaders/all.vert", "../shaders/visualize.frag");
 
     velocity = createSlab(viewportWidth, viewportHeight, 2);
-    density = createSlab(viewportWidth, viewportHeight, 1);
+    density = createSlab(viewportWidth, viewportHeight, 3);
     pressure = createSlab(viewportWidth, viewportHeight, 1);
     temperature = createSlab(viewportWidth, viewportHeight, 1);
     divergence = createSlab(viewportWidth, viewportHeight, 3);
     vorticity = createSlab(viewportWidth, viewportHeight, 2);
 
-    // splat(density.read, viewportWidth / 2, viewportHeight / 2, 20.0, 40.0f);
+    // splat(density.read, viewportWidth / 2, viewportHeight / 2, 20.0, 0.2f, 0.2f, 0.3f);
 
     while (!glfwWindowShouldClose(window)) {
         // Run a step of the simulation
@@ -104,7 +111,7 @@ int main(int argc, char** argv) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Draw ink:
-        glBindTexture(GL_TEXTURE_2D, vorticity.read.textureHandle);
+        glBindTexture(GL_TEXTURE_2D, density.read.textureHandle);
         glUniform3f(fillColorLoc, 1, 1, 1);
         glUniform2f(scaleLoc, 1.0f / viewportWidth, 1.0f / viewportHeight);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -115,19 +122,37 @@ int main(int argc, char** argv) {
         glfwSwapBuffers(window);
         glfwPollEvents();
 
+        // Take Leap motion input and create splats at the hand centers
         Frame frame = controller.frame();
-        for (Hand hand : frame.hands()) {
-            Vector handCenter = hand.palmPosition();
-            Vector handSpeed = hand.palmVelocity();
+        for (Finger finger : frame.fingers()) {
+            if (finger.isExtended()) {
+                Vector tipPosition = finger.stabilizedTipPosition();
+                Vector tipVelocity = finger.tipVelocity();
 
-            int xpos = (int) ((viewportWidth / 2.0) + (handCenter.x * 4));
-            int ypos = (int) (handCenter.y * 4 - 300);
+                int xpos = (int) ((viewportWidth / 2.0) + (tipPosition.x * 4));
+                int ypos = (int) (tipPosition.y * 4 - 300);
 
-            splat(velocity.read, xpos, ypos, 40.0, handSpeed.x, handSpeed.y, 0.0);
+                // switch(finger.type()) {
+                //     case Finger::TYPE_INDEX:
+                //         splat(density.read, density.write, xpos, ypos, 400.0f, 0.1f, 0.1f, 0.1f);
+                //         swapVectorFields(&density);
+                //         break;
+                //     // case Finger::TYPE_MIDDLE:
+                //     //     splat(density.read, density.write, xpos, ypos, 600.0f, 0.1f, 0.1f, 0.033f);
+                //     //     swapVectorFields(&density);
+                //         // splat(density.read, density.write, xpos, ypos, 600.0f, 0.0f, 0.0f, 0.0f);
+                //     default:
+                //         break;
+                // }
+
+                splat(density.read, density.write, xpos, ypos, 400.0f, 0.1f, 0.1f, 0.1f);
+                swapVectorFields(&density);
+
+                splat(velocity.read, velocity.write, xpos, ypos, 400.0f, tipVelocity.x, tipVelocity.y, tipVelocity.z);
+                swapVectorFields(&velocity);
+            }
         }
     }
-
-    // controller.removeListener(listener);
 
     glfwDestroyWindow(window);
     glfwTerminate();

@@ -38,16 +38,16 @@ void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab
     advect(velocity.read, velocity.read, velocity.write, width, height, SCALE, TIMESTEP, DISSIPATION);
     swapVectorFields(&velocity);
 
-    advect(velocity.read, temperature.read, temperature.write, width, height, SCALE, TIMESTEP, DISSIPATION);
-    swapVectorFields(&temperature);
+    // advect(velocity.read, temperature.read, temperature.write, width, height, SCALE, TIMESTEP, DISSIPATION);
+    // swapVectorFields(&temperature);
 
-    advect(velocity.read, density.read, density.write, width, height, SCALE, TIMESTEP, DISSIPATION);
-    swapVectorFields(&density);
+    advect(velocity.read, density.read, density.read, width, height, SCALE, TIMESTEP, DISSIPATION);
+    // swapVectorFields(&density);
 
-    computeDivergence(velocity.read, divergence.read, SCALE);
+    // computeVorticity(velocity.read, vorticity.read, SCALE);
+
     fillVectorField(pressure.read, 0);
-
-    computeVorticity(velocity.read, vorticity.read, SCALE);
+    computeDivergence(velocity.read, divergence.read, SCALE);
 
     // Project begins here
     for (int i = 0; i < 40; i++) {
@@ -184,11 +184,45 @@ void computeVorticity(VectorField velocity, VectorField output,
     resetState();
 }
 
+void computeVorticityForce(VectorField velocity, VectorField vorticity, VectorField output,
+                           float scale, float timestep, float epsilon, float curlX, float curlY) {
+    GLuint program = shaders.vorticityForce;
+    glUseProgram(program);
 
-void splat(VectorField output,
+    GLint velocityLoc = glGetUniformLocation(program, "velocity");
+    GLint vorticityLoc = glGetUniformLocation(program, "vorticity");
+
+    glUniform1i(velocityLoc, 0);
+    glUniform1i(vorticityLoc, 0);
+
+    GLint rHalfScaleLoc = glGetUniformLocation(program, "rHalfScale");
+    GLint timestepLoc = glGetUniformLocation(program, "timestep");
+    GLint epsilonLoc = glGetUniformLocation(program, "epsilon");
+    GLint curlLoc = glGetUniformLocation(program, "curl");
+
+    glUniform1f(rHalfScaleLoc, 0.5 / scale);
+    glUniform1f(timestepLoc, timestep);
+    glUniform1f(epsilonLoc, epsilon);
+    glUniform2f(curlLoc, curlX, curlY);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, velocity.textureHandle);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, vorticity.textureHandle);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    resetState();
+}
+
+
+void splat(VectorField source, VectorField output,
            int x, int y, float radius, float fillX, float fillY, float fillZ) {
     GLuint program = shaders.splat;
     glUseProgram(program);
+
+    GLint inputLoc = glGetUniformLocation(program, "source");
+
+    glUniform1i(inputLoc, 0);
 
     GLint pointLoc = glGetUniformLocation(program, "point");
     GLint radiusLoc = glGetUniformLocation(program, "radius");
@@ -199,7 +233,9 @@ void splat(VectorField output,
     glUniform3f(fillColorLoc, fillX, fillY, fillZ);
 
     glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
-    glEnable(GL_BLEND);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, source.textureHandle);
+    // glEnable(GL_BLEND);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     resetState();
 }
