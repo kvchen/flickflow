@@ -5,6 +5,7 @@
 #define TIMESTEP 0.125f
 #define DISSIPATION 0.998
 #define VELOCITY_DISSIPATION 0.99
+#define NUM_JACOBI_ITERATIONS 40
 #define EPSILON 2.4414e-4
 #define CURL 0.3
 
@@ -36,7 +37,6 @@ static void resetState() {
 
 void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab divergence, Slab vorticity,
               int width, int height) {
-
     advect(velocity.read, velocity.read, velocity.write, width, height, SCALE, TIMESTEP, VELOCITY_DISSIPATION);
     swapVectorFields(&velocity);
 
@@ -45,18 +45,24 @@ void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab
 
     // computeVorticity(velocity.read, vorticity.read, width, height, SCALE);
     // computeVorticityForce(velocity.read, vorticity.read, velocity.write, width, height, SCALE, TIMESTEP, EPSILON, CURL, CURL);
-    // swapVectorFields(&velocity);
 
     // Projection begins here
-    fillVectorField(pressure.read, 0);
     computeDivergence(velocity.read, divergence.read, SCALE);
 
-    for (int i = 0; i < 40; i++) {
+    fillVectorField(pressure.read, 0);
+    for (int i = 0; i < NUM_JACOBI_ITERATIONS; i++) {
         computeJacobi(pressure.read, divergence.read, pressure.write, -1.0, 4.0);
         swapVectorFields(&pressure);
     }
+    // Enforce boundary conditions on the pressure field
+    checkBoundary(pressure.read, pressure.write, width, height, false);
+    swapVectorFields(&pressure);
 
     subtractGradient(velocity.read, pressure.read, velocity.write, SCALE);
+    swapVectorFields(&velocity);
+
+    // Enforce boundary conditions on the velocity field
+    checkBoundary(velocity.read, velocity.write, width, height, true);
     swapVectorFields(&velocity);
 }
 
@@ -243,4 +249,27 @@ void splat(VectorField source, VectorField output,
     // glEnable(GL_BLEND);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     resetState();
+}
+
+
+void checkBoundary(VectorField field, VectorField output, int width, int height, bool isVelocity) {
+  GLuint program = shaders.boundary;
+  glUseProgram(program);
+
+  GLint fieldLoc = glGetUniformLocation(program, "field");
+  glUniform1i(fieldLoc, 0);
+
+  GLint isVelocityLoc = glGetUniformLocation(program, "isVelocity");
+  GLint widthLoc = glGetUniformLocation(program, "width");
+  GLint heightLoc = glGetUniformLocation(program, "height");
+
+  glUniform1i(isVelocityLoc, (int)isVelocity);
+  glUniform1i(widthLoc, width);
+  glUniform1i(heightLoc, height);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, field.textureHandle);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  resetState();
 }
