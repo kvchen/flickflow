@@ -45,6 +45,8 @@ void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab
     advect(velocity.read, density.read, density.write, width, height, SCALE, TIMESTEP, DISSIPATION);
     swapVectorFields(&density);
 
+    // TODO: --- Diffusion ---
+
     // --- Vorticity confinement ---
     computeVorticity(velocity.read, vorticity.read, width, height, SCALE);
     computeVorticityForce(velocity.read, vorticity.read, velocity.write, width, height, SCALE, TIMESTEP, EPSILON, CURL, CURL);
