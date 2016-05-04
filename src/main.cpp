@@ -15,7 +15,7 @@
 #define DEFAULT_HEIGHT 720
 
 // Simulation parameters
-#define SPLAT_SIZE 400.0f
+#define SPLAT_SIZE 1600.0f
 
 int viewportWidth, viewportHeight;
 Slab velocity, density, pressure, temperature, divergence, vorticity;
