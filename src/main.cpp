@@ -15,7 +15,6 @@
 #define DEFAULT_HEIGHT 720
 
 // Simulation parameters
-#define NUM_JACOBI_ITERATIONS 50
 #define SPLAT_SIZE 400.0f
 
 int viewportWidth, viewportHeight;
@@ -155,6 +154,9 @@ int main(int argc, char** argv) {
 
                 splat(velocity.read, velocity.write, xpos, ypos, 300.0f, tipVelocity.x * 4, tipVelocity.y * 4, 0);
                 swapVectorFields(&velocity);
+
+                checkBoundary(velocity.read, velocity.write, viewportWidth, viewportHeight, true);
+                swapVectorFields(&velocity);
             }
         }
 
@@ -172,6 +174,8 @@ int main(int argc, char** argv) {
         splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 0.337f, 0.051f, 0.678f);
         swapVectorFields(&density);
         splat(velocity.read, velocity.write, xpos, ypos, SPLAT_SIZE, xVel * 4, yVel * 4, 0);
+        swapVectorFields(&velocity);
+        checkBoundary(velocity.read, velocity.write, viewportWidth, viewportHeight, true);
         swapVectorFields(&velocity);
     }
 

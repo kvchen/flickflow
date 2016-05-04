@@ -30,3 +30,4 @@ void computeVorticityForce(VectorField velocity, VectorField vorticity, VectorFi
                            float scale, float timestep, float epsilon, float curlX, float curlY);
 void splat(VectorField source, VectorField output,
            int x, int y, float radius, float fillX, float fillY, float fillZ);
+void checkBoundary(VectorField velocity, VectorField output, int width, int height, bool isVelocity);
