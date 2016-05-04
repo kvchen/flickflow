@@ -45,6 +45,8 @@ void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab
     // swapVectorFields(&density);
 
     // computeVorticity(velocity.read, vorticity.read, SCALE);
+    // computeVorticityForce(velocity.read, vorticity.read, velocity.write, SCALE, TIMESTEP, 2.4414e-4, 0.3, 0.3);
+    // swapVectorFields(&velocity);
 
     fillVectorField(pressure.read, 0);
     computeDivergence(velocity.read, divergence.read, SCALE);

@@ -24,9 +24,9 @@ void main() {
     vec2 force = rHalfScale * vec2(abs(top) - abs(bottom), abs(right) - abs(left));
     float lengthSquared = max(epsilon, dot(force, force));
 
-    force *= inversesqrt(lengthSquared) * curl * vc;
+    force *= inversesqrt(lengthSquared) * curl * center;
     force.y *= -1.0;
 
-    vec2 v = texelFetch(velocity, coords).xy;
+    vec2 v = texelFetch(velocity, coords, 0).xy;
     vorticityForce = vec4(v + (timestep * force), 0.0, 1.0);
 }

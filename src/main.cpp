@@ -91,8 +91,6 @@ int main(int argc, char** argv) {
     divergence = createSlab(viewportWidth, viewportHeight, 3);
     vorticity = createSlab(viewportWidth, viewportHeight, 2);
 
-    // splat(density.read, viewportWidth / 2, viewportHeight / 2, 20.0, 0.2f, 0.2f, 0.3f);
-
     while (!glfwWindowShouldClose(window)) {
         // Run a step of the simulation
         simulate(velocity, density, pressure, temperature, divergence, vorticity, viewportWidth, viewportHeight);
@@ -132,20 +130,19 @@ int main(int argc, char** argv) {
                 int xpos = (int) ((viewportWidth / 2.0) + (tipPosition.x * 4));
                 int ypos = (int) (tipPosition.y * 4 - 300);
 
-                // switch(finger.type()) {
-                //     case Finger::TYPE_INDEX:
-                //         splat(density.read, density.write, xpos, ypos, 400.0f, 0.1f, 0.1f, 0.1f);
-                //         swapVectorFields(&density);
-                //         break;
-                //     // case Finger::TYPE_MIDDLE:
-                //     //     splat(density.read, density.write, xpos, ypos, 600.0f, 0.1f, 0.1f, 0.033f);
-                //     //     swapVectorFields(&density);
-                //         // splat(density.read, density.write, xpos, ypos, 600.0f, 0.0f, 0.0f, 0.0f);
-                //     default:
-                //         break;
-                // }
+                switch(finger.type()) {
+                    case Finger::TYPE_INDEX:
+                        splat(density.read, density.write, xpos, ypos, 400.0f, 1.0f, 1.0f, 1.0f);
+                        break;
+                    case Finger::TYPE_MIDDLE:
+                        splat(density.read, density.write, xpos, ypos, 400.0f, 0.0f, 0.0f, 0.0f);
+                        break;
+                    default:
+                        splat(density.read, density.write, xpos, ypos, 600.0f, 1.0f, 1.0f, 0.33f);
+                        break;
+                }
 
-                splat(density.read, density.write, xpos, ypos, 400.0f, 0.1f, 0.1f, 0.1f);
+                // splat(density.read, density.write, xpos, ypos, 400.0f, 1.0f, 0.0f, 1.0f);
                 swapVectorFields(&density);
 
                 splat(velocity.read, velocity.write, xpos, ypos, 400.0f, tipVelocity.x, tipVelocity.y, tipVelocity.z);
