@@ -43,6 +43,11 @@ void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab
     advect(velocity.read, density.read, density.write, width, height, SCALE, TIMESTEP, DISSIPATION);
     swapVectorFields(&density);
 
+    for (int i = 0;  i < NUM_JACOBI_ITERATIONS; i++) {
+      computeJacobi(velocity.read, velocity.read, velocity.write, 1.0, 5.0);
+      swapVectorFields(&velocity);
+    }
+
     computeVorticity(velocity.read, vorticity.read, width, height, SCALE);
     computeVorticityForce(velocity.read, vorticity.read, velocity.write, width, height, SCALE, TIMESTEP, EPSILON, CURL, CURL);
 
