@@ -134,9 +134,10 @@ int main(int argc, char** argv) {
 
     float k = 0;
     float r, g, b;
-    r = sin(FREQUENCY * k + 0) * 127 + 128;
-    g = sin(FREQUENCY * k + 2) * 127 + 128;
-    b = sin(FREQUENCY * k + 4) * 127 + 128;
+
+    r = 0.5 + sin(FREQUENCY * k + 0);
+    g = 0.5 + sin(FREQUENCY * k + 2);
+    b = 0.5 + sin(FREQUENCY * k + 4);
 
     while (!glfwWindowShouldClose(window)) {
         // Run a step of the simulation
@@ -222,10 +223,14 @@ int main(int argc, char** argv) {
                         j = (k + 4) > 32 ? 0 : k + 4;
                         break;
                 }
-                r = sin(FREQUENCY * j + 0) * 127 + 128;
-                g = sin(FREQUENCY * j + 2) * 127 + 128;
-                b = sin(FREQUENCY * j + 4) * 127 + 128;
-                splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, r / 256.0, g / 256.0, b / 256.0);
+
+                float cycle = FREQUENCY * j;
+
+                r = 0.5 + sin(cycle);
+                g = 0.5 + sin(cycle + 2);
+                b = 0.5 + sin(cycle + 4);
+
+                splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, r, g, b);
                 swapVectorFields(&density);
 
                 splat(velocity.read, velocity.write, xpos, ypos, 200.0f, tipVelocity.x * 4, tipVelocity.y * 4, 0);
