@@ -97,24 +97,25 @@ int main(int argc, char** argv) {
 
         // Render the textures to the window framebuffer
         glUseProgram(visualize);
-        GLint fillColorLoc = glGetUniformLocation(visualize, "fillColor");
+
+        GLint biasLoc = glGetUniformLocation(visualize, "bias");
         GLint scaleLoc = glGetUniformLocation(visualize, "scale");
+        GLint maxValLoc = glGetUniformLocation(visualize, "maxVal");
 
         glEnable(GL_BLEND);
 
-        // Set render target to the backbuffer:
         glViewport(0, 0, viewportWidth, viewportHeight);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // Draw ink:
-        glBindTexture(GL_TEXTURE_2D, density.read.textureHandle);
-        glUniform3f(fillColorLoc, 1, 1, 1);
+        glBindTexture(GL_TEXTURE_2D, velocity.read.textureHandle);
+        glUniform3f(biasLoc, 0.5, 0.5, 0.5);
+        glUniform1f(maxValLoc, 128.0);
+        // glUniform1f(maxValLoc, 1.0);
+        // glUniform3f(biasLoc, 0.0, 0.0, 0.0);
         glUniform2f(scaleLoc, 1.0f / viewportWidth, 1.0f / viewportHeight);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-        // Disable blending:
         glDisable(GL_BLEND);
 
         glfwSwapBuffers(window);
@@ -132,20 +133,25 @@ int main(int argc, char** argv) {
 
                 switch(finger.type()) {
                     case Finger::TYPE_INDEX:
-                        splat(density.read, density.write, xpos, ypos, 400.0f, 1.0f, 1.0f, 1.0f);
+                        splat(density.read, density.write, xpos, ypos, 1600.0f, 0.337f, 0.051f, 0.678f);
                         break;
                     case Finger::TYPE_MIDDLE:
-                        splat(density.read, density.write, xpos, ypos, 400.0f, 0.0f, 0.0f, 0.0f);
+                        splat(density.read, density.write, xpos, ypos, 1600.0f, 0.867f, 0.118f, 0.961f);
+                        break;
+                    case Finger::TYPE_RING:
+                        splat(density.read, density.write, xpos, ypos, 1600.0f, 0.0f, 0.0f, 0.0f);
+                        break;
+                    case Finger::TYPE_PINKY:
+                        splat(density.read, density.write, xpos, ypos, 1600.0f, 1.0f, 1.0f, 1.0f);
                         break;
                     default:
-                        splat(density.read, density.write, xpos, ypos, 600.0f, 1.0f, 1.0f, 0.33f);
+                        splat(density.read, density.write, xpos, ypos, 1600.0f, 0.059f, 0.827f, 0.816f);
                         break;
                 }
 
-                // splat(density.read, density.write, xpos, ypos, 400.0f, 1.0f, 0.0f, 1.0f);
                 swapVectorFields(&density);
 
-                splat(velocity.read, velocity.write, xpos, ypos, 400.0f, tipVelocity.x, tipVelocity.y, tipVelocity.z);
+                splat(velocity.read, velocity.write, xpos, ypos, 300.0f, tipVelocity.x * 4, tipVelocity.y * 4, 0);
                 swapVectorFields(&velocity);
             }
         }

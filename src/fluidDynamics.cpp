@@ -4,6 +4,7 @@
 #define SCALE 1.0f
 #define TIMESTEP 0.125f
 #define DISSIPATION 0.998
+#define VELOCITY_DISSIPATION 0.99
 
 
 
@@ -35,7 +36,7 @@ static void resetState() {
 
 void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab divergence, Slab vorticity,
               int width, int height) {
-    advect(velocity.read, velocity.read, velocity.write, width, height, SCALE, TIMESTEP, DISSIPATION);
+    advect(velocity.read, velocity.read, velocity.write, width, height, SCALE, TIMESTEP, VELOCITY_DISSIPATION);
     swapVectorFields(&velocity);
 
     // advect(velocity.read, temperature.read, temperature.write, width, height, SCALE, TIMESTEP, DISSIPATION);

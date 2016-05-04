@@ -10,10 +10,7 @@ using namespace std;
  * and writing from each one.
  */
 void swapVectorFields(Slab* slab) {
-    VectorField tmp = slab->read;
-    slab->read = slab->write;
-    slab->write = tmp;
-    // std::swap(slab->read, slab->write);
+    std::swap(slab->read, slab->write);
 }
 
 
