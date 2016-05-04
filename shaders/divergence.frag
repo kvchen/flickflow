@@ -7,9 +7,10 @@
 
 out float divergence;
 
+uniform float rHalfScale;
+
 uniform sampler2D velocity;
 
-uniform float rHalfScale;
 
 void main() {
     ivec2 coords = ivec2(gl_FragCoord.xy);

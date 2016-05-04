@@ -157,30 +157,31 @@ int main(int argc, char** argv) {
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // TRIGGER WARNING
         swapVectorFields(&density);
 
-        switch(mode) {
-            case(DENSITY):
+        switch (mode) {
+            case DENSITY:
                 glBindTexture(GL_TEXTURE_2D, density.write.textureHandle);
                 glUniform1f(maxValLoc, 1.0);
                 glUniform3f(biasLoc, 0.0, 0.0, 0.0);
                 break;
-            case(VELOCITY):
+            case VELOCITY:
                 glBindTexture(GL_TEXTURE_2D, velocity.read.textureHandle);
-                glUniform3f(biasLoc, 0.5, 0.5, 0.5);
                 glUniform1f(maxValLoc, 128.0);
+                glUniform3f(biasLoc, 0.5, 0.5, 0.5);
                 break;
-            case(PRESSURE):
+            case PRESSURE:
                 glBindTexture(GL_TEXTURE_2D, pressure.read.textureHandle);
                 glUniform1f(maxValLoc, 64.0);
                 glUniform3f(biasLoc, 0.5, 0.5, 0.5);
                 break;
-            case(DIVERGENCE):
+            case DIVERGENCE:
                 glBindTexture(GL_TEXTURE_2D, divergence.read.textureHandle);
                 glUniform1f(maxValLoc, 1.0);
                 glUniform3f(biasLoc, 0.0, 0.0, 0.0);
                 break;
-            case(VORTICITY):
+            case VORTICITY:
                 glBindTexture(GL_TEXTURE_2D, vorticity.read.textureHandle);
                 glUniform1f(maxValLoc, 1.0);
                 glUniform3f(biasLoc, 0.0, 0.0, 0.0);
@@ -194,7 +195,7 @@ int main(int argc, char** argv) {
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        // Take Leap motion input and create splats at the hand centers
+        // Take Leap motion input and create splats at the fingers
         Frame frame = controller.frame();
         for (Finger finger : frame.fingers()) {
             if (finger.isExtended()) {
@@ -225,17 +226,19 @@ int main(int argc, char** argv) {
                 }
 
                 float cycle = FREQUENCY * j;
-
                 r = 0.5 + sin(cycle);
                 g = 0.5 + sin(cycle + 2);
                 b = 0.5 + sin(cycle + 4);
 
+                // Splat the ink onto the screen by updating density field
                 splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, r, g, b);
                 swapVectorFields(&density);
 
+                // Also make the fluid move with the ink just added by updating velocity field in the same way
                 splat(velocity.read, velocity.write, xpos, ypos, 200.0f, tipVelocity.x * 4, tipVelocity.y * 4, 0);
                 swapVectorFields(&velocity);
 
+                // As always, enforce boundary conditions on the velocity field after changing it
                 checkBoundary(velocity.read, velocity.write, viewportWidth, viewportHeight, true);
                 swapVectorFields(&velocity);
             }
@@ -244,6 +247,7 @@ int main(int argc, char** argv) {
         // Detect mouse as an additional "finger" for splats
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
+        // Correct ypos for GLFW screen coordinate system
         ypos = viewportHeight - ypos;
 
         double xVel = xpos - xposPrev;
@@ -252,13 +256,15 @@ int main(int argc, char** argv) {
         xposPrev = xpos;
         yposPrev = ypos;
 
+        // Splat the ink into both density and velocity field (show the ink and also inject a velocity)
         splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, r / 256.0, g / 256.0, b / 256.0);
         swapVectorFields(&density);
-        splat(velocity.read, velocity.write, xpos, ypos, SPLAT_SIZE, xVel * 4, yVel * 4, 0);
+        splat(velocity.read, velocity.write, xpos, ypos, 200.0f, xVel * 4, yVel * 4, 0);
         swapVectorFields(&velocity);
         checkBoundary(velocity.read, velocity.write, viewportWidth, viewportHeight, true);
         swapVectorFields(&velocity);
 
+        // Update variables used for pretty colors
         k = (k + COLOR_STEP_SIZE) > 32 ? 0 : k + COLOR_STEP_SIZE;
         r = sin(FREQUENCY * k + 0) * 127 + 128;
         g = sin(FREQUENCY * k + 2) * 127 + 128;

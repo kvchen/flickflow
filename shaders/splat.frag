@@ -2,11 +2,11 @@
 
 out vec4 color;
 
-uniform sampler2D source;
-
 uniform vec2 point;
 uniform float radius;
 uniform vec3 fillColor;
+
+uniform sampler2D source;
 
 
 float gauss(vec2 p, float r) {

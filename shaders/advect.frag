@@ -8,14 +8,13 @@
 
 out vec4 advection;
 
-uniform sampler2D velocity;
-uniform sampler2D advected;
-
 uniform vec2 rSize;
 uniform float rScale;
-
 uniform float timestep;
 uniform float dissipation;
+
+uniform sampler2D velocity;
+uniform sampler2D advected;
 
 
 void main() {

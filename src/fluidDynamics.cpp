@@ -37,24 +37,23 @@ static void resetState() {
 
 void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab divergence, Slab vorticity,
               int width, int height) {
+    // --- Advection ---
     advect(velocity.read, velocity.read, velocity.write, width, height, SCALE, TIMESTEP, VELOCITY_DISSIPATION);
     swapVectorFields(&velocity);
 
+    // --- Advection of the ink or fluid injected ---
     advect(velocity.read, density.read, density.write, width, height, SCALE, TIMESTEP, DISSIPATION);
     swapVectorFields(&density);
 
-    // for (int i = 0;  i < NUM_JACOBI_ITERATIONS; i++) {
-    //   computeJacobi(velocity.read, velocity.read, velocity.write, 1.0, 5.0);
-    //   swapVectorFields(&velocity);
-    // }
-
+    // --- Vorticity confinement ---
     computeVorticity(velocity.read, vorticity.read, width, height, SCALE);
     computeVorticityForce(velocity.read, vorticity.read, velocity.write, width, height, SCALE, TIMESTEP, EPSILON, CURL, CURL);
     swapVectorFields(&velocity);
 
-    // Projection begins here
+    // --- Projection operator (account for change in fluid velocity due to fluid pressure) ---
+    // Compute divergence of velocity field
     computeDivergence(velocity.read, divergence.read, SCALE);
-
+    // Jacobi iterations to estimate pressure field
     fillVectorField(pressure.read, 0);
     for (int i = 0; i < NUM_JACOBI_ITERATIONS; i++) {
         computeJacobi(pressure.read, divergence.read, pressure.write, -1.0, 4.0);
@@ -63,11 +62,11 @@ void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab
     // Enforce boundary conditions on the pressure field
     checkBoundary(pressure.read, pressure.write, width, height, false);
     swapVectorFields(&pressure);
-
+    // Subtract pressure gradient from the velocity field
     subtractGradient(velocity.read, pressure.read, velocity.write, SCALE);
     swapVectorFields(&velocity);
 
-    // Enforce boundary conditions on the velocity field
+    // --- Finally, enforce boundary conditions on the velocity field ---
     checkBoundary(velocity.read, velocity.write, width, height, true);
     swapVectorFields(&velocity);
 }
@@ -110,11 +109,9 @@ void computeDivergence(VectorField velocity, VectorField output,
     glUseProgram(program);
 
     GLint velocityLoc = glGetUniformLocation(program, "velocity");
-
     glUniform1i(velocityLoc, 0);
 
     GLint rHalfScaleLoc = glGetUniformLocation(program, "rHalfScale");
-
     glUniform1f(rHalfScaleLoc, 0.5 / scale);
 
     glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
@@ -132,12 +129,10 @@ void subtractGradient(VectorField velocity, VectorField pressure, VectorField ou
 
     GLint velocityLoc = glGetUniformLocation(program, "velocity");
     GLint pressureLoc = glGetUniformLocation(program, "pressure");
-
     glUniform1i(velocityLoc, 0);
     glUniform1i(pressureLoc, 1);
 
     GLint rHalfScaleLoc = glGetUniformLocation(program, "rHalfScale");
-
     glUniform1f(rHalfScaleLoc, 0.5 / scale);
 
     glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
@@ -157,13 +152,11 @@ void computeJacobi(VectorField pressure, VectorField divergence, VectorField out
 
     GLint pressureLoc = glGetUniformLocation(program, "pressure");
     GLint divergenceLoc = glGetUniformLocation(program, "divergence");
-
     glUniform1i(pressureLoc, 0);
     glUniform1i(divergenceLoc, 1);
 
     GLint alphaLoc = glGetUniformLocation(program, "alpha");
     GLint rBetaLoc = glGetUniformLocation(program, "rBeta");
-
     glUniform1f(alphaLoc, alpha);
     glUniform1f(rBetaLoc, 1.0 / beta);
 
@@ -183,12 +176,10 @@ void computeVorticity(VectorField velocity, VectorField output,
     glUseProgram(program);
 
     GLint velocityLoc = glGetUniformLocation(program, "velocity");
-
     glUniform1i(velocityLoc, 0);
 
     GLint sizeLoc = glGetUniformLocation(program, "size");
     GLint rHalfScaleLoc = glGetUniformLocation(program, "rHalfScale");
-
     glUniform2f(sizeLoc, width, height);
     glUniform1f(rHalfScaleLoc, 0.5 / scale);
 
@@ -206,7 +197,6 @@ void computeVorticityForce(VectorField velocity, VectorField vorticity, VectorFi
 
     GLint velocityLoc = glGetUniformLocation(program, "velocity");
     GLint vorticityLoc = glGetUniformLocation(program, "vorticity");
-
     glUniform1i(velocityLoc, 0);
     glUniform1i(vorticityLoc, 1);
 
@@ -215,7 +205,6 @@ void computeVorticityForce(VectorField velocity, VectorField vorticity, VectorFi
     GLint timestepLoc = glGetUniformLocation(program, "timestep");
     GLint epsilonLoc = glGetUniformLocation(program, "epsilon");
     GLint curlLoc = glGetUniformLocation(program, "curl");
-
     glUniform2f(sizeLoc, width, height);
     glUniform1f(rHalfScaleLoc, 0.5 / scale);
     glUniform1f(timestepLoc, timestep);
@@ -238,13 +227,11 @@ void splat(VectorField source, VectorField output,
     glUseProgram(program);
 
     GLint inputLoc = glGetUniformLocation(program, "source");
-
     glUniform1i(inputLoc, 0);
 
     GLint pointLoc = glGetUniformLocation(program, "point");
     GLint radiusLoc = glGetUniformLocation(program, "radius");
     GLint fillColorLoc = glGetUniformLocation(program, "fillColor");
-
     glUniform2f(pointLoc, x, y);
     glUniform1f(radiusLoc, radius);
     glUniform3f(fillColorLoc, fillX, fillY, fillZ);
@@ -252,7 +239,6 @@ void splat(VectorField source, VectorField output,
     glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, source.textureHandle);
-    // glEnable(GL_BLEND);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     resetState();
 }
@@ -268,7 +254,6 @@ void checkBoundary(VectorField field, VectorField output, int width, int height,
   GLint isVelocityLoc = glGetUniformLocation(program, "isVelocity");
   GLint widthLoc = glGetUniformLocation(program, "width");
   GLint heightLoc = glGetUniformLocation(program, "height");
-
   glUniform1i(isVelocityLoc, (int)isVelocity);
   glUniform1i(widthLoc, width);
   glUniform1i(heightLoc, height);

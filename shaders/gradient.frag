@@ -4,10 +4,10 @@
 
 out vec2 color;
 
+uniform float rHalfScale;
+
 uniform sampler2D pressure;
 uniform sampler2D velocity;
-
-uniform float rHalfScale;
 
 
 void main() {

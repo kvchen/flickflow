@@ -6,10 +6,11 @@
 
 out vec4 bounded;
 
-uniform sampler2D field; // either the velocity or pressure field
 uniform bool isVelocity;
 uniform int width;
 uniform int height;
+
+uniform sampler2D field; // either the velocity or pressure field
 
 void main() {
     ivec2 coords = ivec2(gl_FragCoord.xy);

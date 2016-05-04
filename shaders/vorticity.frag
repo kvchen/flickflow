@@ -2,10 +2,11 @@
 
 out vec4 vorticity;
 
-uniform sampler2D velocity;
-
 uniform vec2 size;
 uniform float rHalfScale;
+
+uniform sampler2D velocity;
+
 
 void main() {
     vec2 coords = gl_FragCoord.xy / size.xy;

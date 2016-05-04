@@ -2,15 +2,14 @@
 
 out vec4 newVelocity;
 
-uniform sampler2D velocity;
-uniform sampler2D vorticity;
-
 uniform vec2 size;
 uniform float rHalfScale;
-
 uniform float timestep;
 uniform float epsilon;
 uniform vec2 curl;
+
+uniform sampler2D velocity;
+uniform sampler2D vorticity;
 
 
 void main() {

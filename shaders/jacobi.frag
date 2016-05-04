@@ -12,7 +12,7 @@ uniform sampler2D divergence;
 void main() {
     ivec2 coords = ivec2(gl_FragCoord.xy);
 
-    // Get the netghboring pressures
+    // Get neighboring pressures
     vec4 left = texelFetchOffset(pressure, coords, 0, ivec2(-1, 0));
     vec4 right = texelFetchOffset(pressure, coords, 0, ivec2(1, 0));
     vec4 bottom = texelFetchOffset(pressure, coords, 0, ivec2(0, -1));
