@@ -5,8 +5,8 @@
 #define TIMESTEP 0.125f
 #define DISSIPATION 0.998
 #define VELOCITY_DISSIPATION 0.99
-
-
+#define EPSILON 2.4414e-4
+#define CURL 0.3
 
 Shaders shaders;
 
@@ -36,18 +36,16 @@ static void resetState() {
 
 void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab divergence, Slab vorticity,
               int width, int height) {
+
     advect(velocity.read, velocity.read, velocity.write, width, height, SCALE, TIMESTEP, VELOCITY_DISSIPATION);
     swapVectorFields(&velocity);
 
-    // advect(velocity.read, temperature.read, temperature.write, width, height, SCALE, TIMESTEP, DISSIPATION);
-    // swapVectorFields(&temperature);
+    advect(velocity.read, density.read, density.write, width, height, SCALE, TIMESTEP, DISSIPATION);
+    swapVectorFields(&density);
 
-    advect(velocity.read, density.read, density.read, width, height, SCALE, TIMESTEP, DISSIPATION);
-    // swapVectorFields(&density);
-
-    computeVorticity(velocity.read, vorticity.read, SCALE);
-    computeVorticityForce(velocity.read, vorticity.read, velocity.write, SCALE, TIMESTEP, 2.4414e-4, 0.3, 0.3);
-    swapVectorFields(&velocity);
+    // computeVorticity(velocity.read, vorticity.read, width, height, SCALE);
+    // computeVorticityForce(velocity.read, vorticity.read, velocity.write, width, height, SCALE, TIMESTEP, EPSILON, CURL, CURL);
+    // swapVectorFields(&velocity);
 
     // Projection begins here
     fillVectorField(pressure.read, 0);
@@ -168,7 +166,7 @@ void computeJacobi(VectorField pressure, VectorField divergence, VectorField out
 
 
 void computeVorticity(VectorField velocity, VectorField output,
-               float scale) {
+                      int width, int height, float scale) {
     GLuint program = shaders.vorticity;
     glUseProgram(program);
 
@@ -176,8 +174,10 @@ void computeVorticity(VectorField velocity, VectorField output,
 
     glUniform1i(velocityLoc, 0);
 
+    GLint sizeLoc = glGetUniformLocation(program, "size");
     GLint rHalfScaleLoc = glGetUniformLocation(program, "rHalfScale");
 
+    glUniform2f(sizeLoc, width, height);
     glUniform1f(rHalfScaleLoc, 0.5 / scale);
 
     glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
@@ -188,7 +188,7 @@ void computeVorticity(VectorField velocity, VectorField output,
 }
 
 void computeVorticityForce(VectorField velocity, VectorField vorticity, VectorField output,
-                           float scale, float timestep, float epsilon, float curlX, float curlY) {
+                           int width, int height, float scale, float timestep, float epsilon, float curlX, float curlY) {
     GLuint program = shaders.vorticityForce;
     glUseProgram(program);
 
@@ -196,17 +196,19 @@ void computeVorticityForce(VectorField velocity, VectorField vorticity, VectorFi
     GLint vorticityLoc = glGetUniformLocation(program, "vorticity");
 
     glUniform1i(velocityLoc, 0);
-    glUniform1i(vorticityLoc, 0);
+    glUniform1i(vorticityLoc, 1);
 
+    GLint sizeLoc = glGetUniformLocation(program, "size");
     GLint rHalfScaleLoc = glGetUniformLocation(program, "rHalfScale");
     GLint timestepLoc = glGetUniformLocation(program, "timestep");
     GLint epsilonLoc = glGetUniformLocation(program, "epsilon");
     GLint curlLoc = glGetUniformLocation(program, "curl");
 
+    glUniform2f(sizeLoc, width, height);
     glUniform1f(rHalfScaleLoc, 0.5 / scale);
     glUniform1f(timestepLoc, timestep);
     glUniform1f(epsilonLoc, epsilon);
-    glUniform2f(curlLoc, curlX, curlY);
+    glUniform2f(curlLoc, curlX * scale, curlY * scale);
 
     glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
     glActiveTexture(GL_TEXTURE0);

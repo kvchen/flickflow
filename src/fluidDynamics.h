@@ -25,8 +25,8 @@ void subtractGradient(VectorField velocity, VectorField pressure, VectorField ou
 void computeJacobi(VectorField pressure, VectorField divergence, VectorField output,
                    float alpha, float beta);
 void computeVorticity(VectorField velocity, VectorField output,
-                      float scale);
+                      int width, int height, float scale);
 void computeVorticityForce(VectorField velocity, VectorField vorticity, VectorField output,
-                           float scale, float timestep, float epsilon, float curlX, float curlY);
+                           int width, int height, float scale, float timestep, float epsilon, float curlX, float curlY);
 void splat(VectorField source, VectorField output,
            int x, int y, float radius, float fillX, float fillY, float fillZ);
