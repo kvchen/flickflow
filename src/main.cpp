@@ -17,10 +17,7 @@
 #define DEFAULT_HEIGHT 720
 
 // Simulation parameters
-#define SPLAT_SIZE 1600.0f
-#define MIX_RED 256
-#define MIX_BLUE 256
-#define MIX_GREEN 256
+#define SPLAT_SIZE 400.0f
 #define FREQUENCY .3f
 #define COLOR_STEP_SIZE .02f
 
@@ -229,7 +226,6 @@ int main(int argc, char** argv) {
                 g = sin(FREQUENCY * j + 2) * 127 + 128;
                 b = sin(FREQUENCY * j + 4) * 127 + 128;
                 splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, r / 256.0, g / 256.0, b / 256.0);
-
                 swapVectorFields(&density);
 
                 splat(velocity.read, velocity.write, xpos, ypos, 200.0f, tipVelocity.x * 4, tipVelocity.y * 4, 0);
