@@ -1,6 +1,8 @@
 // Standard includes
 #include <stdlib.h>
 #include <cstdio>
+#include <cmath>
+#include <deque>
 #include "Leap.h"
 
 // OpenGL includes
@@ -16,6 +18,11 @@
 
 // Simulation parameters
 #define SPLAT_SIZE 1600.0f
+#define MIX_RED 256
+#define MIX_BLUE 256
+#define MIX_GREEN 256
+#define FREQUENCY .3f
+#define COLOR_STEP_SIZE .02f
 
 int viewportWidth, viewportHeight;
 Slab velocity, density, pressure, temperature, divergence, vorticity;
@@ -65,6 +72,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
     }
 }
+
+
 
 
 int main(int argc, char** argv) {
@@ -125,6 +134,12 @@ int main(int argc, char** argv) {
     vorticity = createSlab(viewportWidth, viewportHeight, 2);
 
     int xposPrev, yposPrev;
+
+    float k = 0;
+    float r, g, b;
+    r = sin(FREQUENCY * k + 0) * 127 + 128;
+    g = sin(FREQUENCY * k + 2) * 127 + 128;
+    b = sin(FREQUENCY * k + 4) * 127 + 128;
 
     while (!glfwWindowShouldClose(window)) {
         // Run a step of the simulation
@@ -191,23 +206,30 @@ int main(int argc, char** argv) {
                 int xpos = (int) ((viewportWidth / 2.0) + (tipPosition.x * 4));
                 int ypos = (int) (tipPosition.y * 4 - 300);
 
+                float j;
+
                 switch(finger.type()) {
                     case Finger::TYPE_INDEX:
-                        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 0.337f, 0.051f, 0.678f);
+                        j = k;
                         break;
                     case Finger::TYPE_MIDDLE:
-                        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 0.867f, 0.118f, 0.961f);
+                        j = (k + 1) > 32 ? 0 : k + 1;
                         break;
                     case Finger::TYPE_RING:
-                        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 0.0f, 0.0f, 0.0f);
+                        j = (k + 2) > 32 ? 0 : k + 2;
                         break;
                     case Finger::TYPE_PINKY:
-                        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 1.0f, 1.0f, 1.0f);
+                        j = (k + 3) > 32 ? 0 : k + 3;
                         break;
                     default:
-                        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 0.059f, 0.827f, 0.816f);
+                        j = (k + 4) > 32 ? 0 : k + 4;
                         break;
                 }
+                r = sin(FREQUENCY * j + 0) * 127 + 128;
+                g = sin(FREQUENCY * j + 2) * 127 + 128;
+                b = sin(FREQUENCY * j + 4) * 127 + 128;
+                splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, r / 256.0, g / 256.0, b / 256.0);
+
                 swapVectorFields(&density);
 
                 splat(velocity.read, velocity.write, xpos, ypos, 200.0f, tipVelocity.x * 4, tipVelocity.y * 4, 0);
@@ -229,12 +251,17 @@ int main(int argc, char** argv) {
         xposPrev = xpos;
         yposPrev = ypos;
 
-        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 0.337f, 0.051f, 0.678f);
+        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, r / 256.0, g / 256.0, b / 256.0);
         swapVectorFields(&density);
         splat(velocity.read, velocity.write, xpos, ypos, SPLAT_SIZE, xVel * 4, yVel * 4, 0);
         swapVectorFields(&velocity);
         checkBoundary(velocity.read, velocity.write, viewportWidth, viewportHeight, true);
         swapVectorFields(&velocity);
+
+        k = (k + COLOR_STEP_SIZE) > 32 ? 0 : k + COLOR_STEP_SIZE;
+        r = sin(FREQUENCY * k + 0) * 127 + 128;
+        g = sin(FREQUENCY * k + 2) * 127 + 128;
+        b = sin(FREQUENCY * k + 4) * 127 + 128;
     }
 
     glfwDestroyWindow(window);
