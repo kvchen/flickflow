@@ -45,14 +45,14 @@ void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab
     advect(velocity.read, density.read, density.read, width, height, SCALE, TIMESTEP, DISSIPATION);
     // swapVectorFields(&density);
 
-    // computeVorticity(velocity.read, vorticity.read, SCALE);
-    // computeVorticityForce(velocity.read, vorticity.read, velocity.write, SCALE, TIMESTEP, 2.4414e-4, 0.3, 0.3);
-    // swapVectorFields(&velocity);
+    computeVorticity(velocity.read, vorticity.read, SCALE);
+    computeVorticityForce(velocity.read, vorticity.read, velocity.write, SCALE, TIMESTEP, 2.4414e-4, 0.3, 0.3);
+    swapVectorFields(&velocity);
 
+    // Projection begins here
     fillVectorField(pressure.read, 0);
     computeDivergence(velocity.read, divergence.read, SCALE);
 
-    // Project begins here
     for (int i = 0; i < 40; i++) {
         computeJacobi(pressure.read, divergence.read, pressure.write, -1.0, 4.0);
         swapVectorFields(&pressure);

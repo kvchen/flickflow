@@ -16,7 +16,7 @@
 
 // Simulation parameters
 #define NUM_JACOBI_ITERATIONS 50
-
+#define SPLAT_SIZE 400.0f
 
 int viewportWidth, viewportHeight;
 Slab velocity, density, pressure, temperature, divergence, vorticity;
@@ -91,6 +91,8 @@ int main(int argc, char** argv) {
     divergence = createSlab(viewportWidth, viewportHeight, 3);
     vorticity = createSlab(viewportWidth, viewportHeight, 2);
 
+    int xposPrev, yposPrev;
+
     while (!glfwWindowShouldClose(window)) {
         // Run a step of the simulation
         simulate(velocity, density, pressure, temperature, divergence, vorticity, viewportWidth, viewportHeight);
@@ -109,11 +111,11 @@ int main(int argc, char** argv) {
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glBindTexture(GL_TEXTURE_2D, velocity.read.textureHandle);
-        glUniform3f(biasLoc, 0.5, 0.5, 0.5);
-        glUniform1f(maxValLoc, 128.0);
-        // glUniform1f(maxValLoc, 1.0);
-        // glUniform3f(biasLoc, 0.0, 0.0, 0.0);
+        glBindTexture(GL_TEXTURE_2D, density.read.textureHandle);
+        // glUniform3f(biasLoc, 0.5, 0.5, 0.5);
+        // glUniform1f(maxValLoc, 128.0);
+        glUniform1f(maxValLoc, 1.0);
+        glUniform3f(biasLoc, 0.0, 0.0, 0.0);
         glUniform2f(scaleLoc, 1.0f / viewportWidth, 1.0f / viewportHeight);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glDisable(GL_BLEND);
@@ -133,19 +135,19 @@ int main(int argc, char** argv) {
 
                 switch(finger.type()) {
                     case Finger::TYPE_INDEX:
-                        splat(density.read, density.write, xpos, ypos, 1600.0f, 0.337f, 0.051f, 0.678f);
+                        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 0.337f, 0.051f, 0.678f);
                         break;
                     case Finger::TYPE_MIDDLE:
-                        splat(density.read, density.write, xpos, ypos, 1600.0f, 0.867f, 0.118f, 0.961f);
+                        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 0.867f, 0.118f, 0.961f);
                         break;
                     case Finger::TYPE_RING:
-                        splat(density.read, density.write, xpos, ypos, 1600.0f, 0.0f, 0.0f, 0.0f);
+                        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 0.0f, 0.0f, 0.0f);
                         break;
                     case Finger::TYPE_PINKY:
-                        splat(density.read, density.write, xpos, ypos, 1600.0f, 1.0f, 1.0f, 1.0f);
+                        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 1.0f, 1.0f, 1.0f);
                         break;
                     default:
-                        splat(density.read, density.write, xpos, ypos, 1600.0f, 0.059f, 0.827f, 0.816f);
+                        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 0.059f, 0.827f, 0.816f);
                         break;
                 }
 
@@ -155,6 +157,22 @@ int main(int argc, char** argv) {
                 swapVectorFields(&velocity);
             }
         }
+
+        // Detect mouse as an additional "finger" for splats
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        ypos = viewportHeight - ypos;
+
+        double xVel = xpos - xposPrev;
+        double yVel = ypos - yposPrev;
+
+        xposPrev = xpos;
+        yposPrev = ypos;
+
+        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 0.337f, 0.051f, 0.678f);
+        swapVectorFields(&density);
+        splat(velocity.read, velocity.write, xpos, ypos, SPLAT_SIZE, xVel * 4, yVel * 4, 0);
+        swapVectorFields(&velocity);
     }
 
     glfwDestroyWindow(window);
