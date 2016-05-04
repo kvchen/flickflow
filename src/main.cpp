@@ -13,11 +13,11 @@
 #include "shaderUtils.h"
 
 
-#define DEFAULT_WIDTH 800
-#define DEFAULT_HEIGHT 600
+#define DEFAULT_WIDTH 1280
+#define DEFAULT_HEIGHT 720
 
 // Simulation parameters
-#define SPLAT_SIZE 800.0f
+#define SPLAT_SIZE 400.0f
 #define FREQUENCY .3f
 #define COLOR_STEP_SIZE .02f
 
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
     // glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
     // glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-    window = glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "FlickFlow", glfwGetPrimaryMonitor(), NULL);
+    window = glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "FlickFlow", NULL, NULL);
     if (!window) {
         glfwTerminate();
         exit(EXIT_FAILURE);

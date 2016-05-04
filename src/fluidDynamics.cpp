@@ -3,9 +3,9 @@
 
 #define SCALE 1.0f
 #define TIMESTEP 0.125f
-#define DISSIPATION 0.974
+#define DISSIPATION 0.99
 #define VELOCITY_DISSIPATION 0.99
-#define NUM_JACOBI_ITERATIONS 40
+#define NUM_JACOBI_ITERATIONS 30
 #define EPSILON 2.4414e-4
 #define CURL .3
 
@@ -43,10 +43,10 @@ void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab
     advect(velocity.read, density.read, density.write, width, height, SCALE, TIMESTEP, DISSIPATION);
     swapVectorFields(&density);
 
-    for (int i = 0;  i < NUM_JACOBI_ITERATIONS; i++) {
-      computeJacobi(velocity.read, velocity.read, velocity.write, 1.0, 5.0);
-      swapVectorFields(&velocity);
-    }
+    // for (int i = 0;  i < NUM_JACOBI_ITERATIONS; i++) {
+    //   computeJacobi(velocity.read, velocity.read, velocity.write, 1.0, 5.0);
+    //   swapVectorFields(&velocity);
+    // }
 
     computeVorticity(velocity.read, vorticity.read, width, height, SCALE);
     computeVorticityForce(velocity.read, vorticity.read, velocity.write, width, height, SCALE, TIMESTEP, EPSILON, CURL, CURL);
