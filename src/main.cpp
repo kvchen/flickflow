@@ -21,17 +21,49 @@ int viewportWidth, viewportHeight;
 Slab velocity, density, pressure, temperature, divergence, vorticity;
 
 
+enum DisplayMode {
+    DENSITY,
+    VELOCITY,
+    PRESSURE,
+    DIVERGENCE,
+    VORTICITY
+};
+
+DisplayMode mode = DENSITY;
+
+
 using namespace Leap;
-
-
-void render() {
-
-}
 
 
 void resize(GLFWwindow* window, int width, int height) {
     viewportWidth = width;
     viewportHeight = height;
+}
+
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (action == GLFW_PRESS) {
+        switch(key) {
+            case(GLFW_KEY_1):
+                std::cout << "Switched to density mode" << std::endl;
+                mode = DENSITY;
+                break;
+            case(GLFW_KEY_2):
+                mode = VELOCITY;
+                break;
+            case(GLFW_KEY_3):
+                mode = PRESSURE;
+                break;
+            case(GLFW_KEY_4):
+                mode = DIVERGENCE;
+                break;
+            case(GLFW_KEY_5):
+                mode = VORTICITY;
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 
@@ -73,6 +105,8 @@ int main(int argc, char** argv) {
 
     std::printf("Using GL Version: %s\n", glGetString(GL_VERSION));
 
+    glfwSetKeyCallback(window, keyCallback);
+
     // Set up the Leap motion
     Controller controller;
 
@@ -83,8 +117,8 @@ int main(int argc, char** argv) {
 
     GLuint visualize = loadShaders("../shaders/all.vert", "../shaders/visualize.frag");
 
-    velocity = createSlab(viewportWidth, viewportHeight, 2);
     density = createSlab(viewportWidth, viewportHeight, 3);
+    velocity = createSlab(viewportWidth, viewportHeight, 2);
     pressure = createSlab(viewportWidth, viewportHeight, 1);
     temperature = createSlab(viewportWidth, viewportHeight, 1);
     divergence = createSlab(viewportWidth, viewportHeight, 3);
@@ -110,11 +144,36 @@ int main(int argc, char** argv) {
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glBindTexture(GL_TEXTURE_2D, density.read.textureHandle);
-        // glUniform3f(biasLoc, 0.5, 0.5, 0.5);
-        // glUniform1f(maxValLoc, 128.0);
-        glUniform1f(maxValLoc, 1.0);
-        glUniform3f(biasLoc, 0.0, 0.0, 0.0);
+        swapVectorFields(&density);
+
+        switch(mode) {
+            case(DENSITY):
+                glBindTexture(GL_TEXTURE_2D, density.write.textureHandle);
+                glUniform1f(maxValLoc, 1.0);
+                glUniform3f(biasLoc, 0.0, 0.0, 0.0);
+                break;
+            case(VELOCITY):
+                glBindTexture(GL_TEXTURE_2D, velocity.read.textureHandle);
+                glUniform3f(biasLoc, 0.5, 0.5, 0.5);
+                glUniform1f(maxValLoc, 128.0);
+                break;
+            case(PRESSURE):
+                glBindTexture(GL_TEXTURE_2D, pressure.read.textureHandle);
+                glUniform1f(maxValLoc, 64.0);
+                glUniform3f(biasLoc, 0.5, 0.5, 0.5);
+                break;
+            case(DIVERGENCE):
+                glBindTexture(GL_TEXTURE_2D, divergence.read.textureHandle);
+                glUniform1f(maxValLoc, 1.0);
+                glUniform3f(biasLoc, 0.0, 0.0, 0.0);
+                break;
+            case(VORTICITY):
+                glBindTexture(GL_TEXTURE_2D, vorticity.read.textureHandle);
+                glUniform1f(maxValLoc, 1.0);
+                glUniform3f(biasLoc, 0.0, 0.0, 0.0);
+                break;
+        }
+
         glUniform2f(scaleLoc, 1.0f / viewportWidth, 1.0f / viewportHeight);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glDisable(GL_BLEND);
@@ -149,10 +208,9 @@ int main(int argc, char** argv) {
                         splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, 0.059f, 0.827f, 0.816f);
                         break;
                 }
-
                 swapVectorFields(&density);
 
-                splat(velocity.read, velocity.write, xpos, ypos, 300.0f, tipVelocity.x * 4, tipVelocity.y * 4, 0);
+                splat(velocity.read, velocity.write, xpos, ypos, 200.0f, tipVelocity.x * 4, tipVelocity.y * 4, 0);
                 swapVectorFields(&velocity);
 
                 checkBoundary(velocity.read, velocity.write, viewportWidth, viewportHeight, true);
