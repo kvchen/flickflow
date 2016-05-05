@@ -1,8 +1,10 @@
+#define _USE_MATH_DEFINES
+
 // Standard includes
 #include <stdlib.h>
 #include <cstdio>
 #include <cmath>
-#include <deque>
+// #include <deque>
 #include "Leap.h"
 
 // OpenGL includes
@@ -76,6 +78,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 }
 
 
+void applyLeapInput(Controller controller, int colorCycle) {
+
+}
+
 
 
 int main(int argc, char** argv) {
@@ -90,14 +96,6 @@ int main(int argc, char** argv) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    // GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-    // const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-    //
-    // glfwWindowHint(GLFW_RED_BITS, mode->redBits);
-    // glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
-    // glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
-    // glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
     window = glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "FlickFlow", NULL, NULL);
     if (!window) {
@@ -128,6 +126,7 @@ int main(int argc, char** argv) {
 
     GLuint visualize = loadShaders("../shaders/all.vert", "../shaders/visualize.frag");
 
+    // Initialize all our texture "slabs"
     density = createSlab(viewportWidth, viewportHeight, 3);
     velocity = createSlab(viewportWidth, viewportHeight, 2);
     pressure = createSlab(viewportWidth, viewportHeight, 1);
@@ -137,12 +136,8 @@ int main(int argc, char** argv) {
 
     int xposPrev, yposPrev;
 
-    float k = 0;
+    float colorCounter = 0, colorBase;
     float r, g, b;
-
-    r = 0.5 + sin(FREQUENCY * k + 0);
-    g = 0.5 + sin(FREQUENCY * k + 2);
-    b = 0.5 + sin(FREQUENCY * k + 4);
 
     while (!glfwWindowShouldClose(window)) {
         // Run a step of the simulation
@@ -200,6 +195,10 @@ int main(int argc, char** argv) {
         glfwSwapBuffers(window);
         glfwPollEvents();
 
+        // Update the color counter
+        colorCounter += COLOR_STEP_SIZE;
+        colorBase = colorCounter * FREQUENCY;
+
         // Take Leap motion input and create splats at the fingers
         Frame frame = controller.frame();
         for (Finger finger : frame.fingers()) {
@@ -210,30 +209,11 @@ int main(int argc, char** argv) {
                 int xpos = (int) ((viewportWidth / 2.0) + (tipPosition.x * 4));
                 int ypos = (int) (tipPosition.y * 4 - 300);
 
-                float j;
+                float fingerBase = colorBase + 2 * ((int) finger.type());
 
-                switch(finger.type()) {
-                    case Finger::TYPE_INDEX:
-                        j = k;
-                        break;
-                    case Finger::TYPE_MIDDLE:
-                        j = (k + 1) > 32 ? 0 : k + 1;
-                        break;
-                    case Finger::TYPE_RING:
-                        j = (k + 2) > 32 ? 0 : k + 2;
-                        break;
-                    case Finger::TYPE_PINKY:
-                        j = (k + 3) > 32 ? 0 : k + 3;
-                        break;
-                    default:
-                        j = (k + 4) > 32 ? 0 : k + 4;
-                        break;
-                }
-
-                float cycle = FREQUENCY * j;
-                r = 0.5 + sin(cycle);
-                g = 0.5 + sin(cycle + 2);
-                b = 0.5 + sin(cycle + 4);
+                r = 0.5 + sin(fingerBase);
+                g = 0.5 + sin(fingerBase + 2);
+                b = 0.5 + sin(fingerBase + 4);
 
                 // Splat the ink onto the screen by updating density field
                 gaussianSplat(density.read, density.write, xpos, ypos, INK_SPLAT_SIZE, r, g, b);
@@ -252,6 +232,7 @@ int main(int argc, char** argv) {
         // Detect mouse as an additional "finger" for splats
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
+
         // Correct ypos for GLFW screen coordinate system
         ypos = viewportHeight - ypos;
 
@@ -260,6 +241,10 @@ int main(int argc, char** argv) {
 
         xposPrev = xpos;
         yposPrev = ypos;
+
+        r = 0.5 + sin(colorBase);
+        g = 0.5 + sin(colorBase + 2);
+        b = 0.5 + sin(colorBase + 4);
 
         // Splat the ink into both density and velocity field (show the ink and also inject a velocity)
         gaussianSplat(density.read, density.write, xpos, ypos, INK_SPLAT_SIZE, r, g, b);
@@ -270,13 +255,6 @@ int main(int argc, char** argv) {
 
         checkBoundary(velocity.read, velocity.write, viewportWidth, viewportHeight, true);
         swapVectorFields(&velocity);
-
-        // Update variables used for pretty colors
-        k = (k + COLOR_STEP_SIZE) > 32 ? 0 : k + COLOR_STEP_SIZE;
-        float cycle = FREQUENCY * k;
-        r = 0.5 + sin(cycle);
-        g = 0.5 + sin(cycle + 2);
-        b = 0.5 + sin(cycle+ 4);
     }
 
     glfwDestroyWindow(window);
