@@ -2,7 +2,7 @@
 
 ## Description
 
-FlickFlow is an incompressible fluid simulation written OpenGL, with bindings to the Leap motion SDK for additional interactivity. [Here](https://docs.google.com/presentation/d/1Ha1kNUi-22188_0rZ7o7jt-xS9Eb8eh20hNoLjJnnEQ) is a presentation detailing a high-level overview of how it works.
+FlickFlow is an incompressible fluid simulation written OpenGL, with bindings to the Leap motion SDK for additional interactivity. A high-level overview of how our simulation works is detailed in our [class presentation](https://docs.google.com/presentation/d/1Ha1kNUi-22188_0rZ7o7jt-xS9Eb8eh20hNoLjJnnEQ/edit?usp=sharing).
 
 ![](https://cloud.githubusercontent.com/assets/4731228/15039261/6f7eba3e-1260-11e6-87ec-3ed430fe0429.gif)
 
