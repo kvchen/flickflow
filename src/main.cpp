@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <cstdio>
 #include <cmath>
-// #include <deque>
 #include "Leap.h"
 
 // OpenGL includes
@@ -15,8 +14,8 @@
 #include "shaderUtils.h"
 
 
-#define DEFAULT_WIDTH 800
-#define DEFAULT_HEIGHT 450
+#define DEFAULT_WIDTH 1280
+#define DEFAULT_HEIGHT 720
 
 // Simulation parameters
 #define INK_SPLAT_SIZE 400.0f
@@ -76,12 +75,6 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
     }
 }
-
-
-void applyLeapInput(Controller controller, int colorCycle) {
-
-}
-
 
 
 int main(int argc, char** argv) {
@@ -201,6 +194,7 @@ int main(int argc, char** argv) {
 
         // Take Leap motion input and create splats at the fingers
         Frame frame = controller.frame();
+
         for (Finger finger : frame.fingers()) {
             if (finger.isExtended()) {
                 Vector tipPosition = finger.stabilizedTipPosition();
@@ -209,7 +203,7 @@ int main(int argc, char** argv) {
                 int xpos = (int) ((viewportWidth / 2.0) + (tipPosition.x * 4));
                 int ypos = (int) (tipPosition.y * 4 - 300);
 
-                float fingerBase = colorBase + 2 * ((int) finger.type());
+                float fingerBase = colorBase + 0.5 * ((int) finger.type());
 
                 r = 0.5 + sin(fingerBase);
                 g = 0.5 + sin(fingerBase + 2);
@@ -229,32 +223,35 @@ int main(int argc, char** argv) {
             }
         }
 
-        // Detect mouse as an additional "finger" for splats
-        double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
+        // Disable the mouse if the Leap motion is being used.
+        int fingerCount = frame.fingers().count();
+        if (fingerCount == 0) {
+            double xpos, ypos;
+            glfwGetCursorPos(window, &xpos, &ypos);
 
-        // Correct ypos for GLFW screen coordinate system
-        ypos = viewportHeight - ypos;
+            // Correct ypos for GLFW screen coordinate system
+            ypos = viewportHeight - ypos;
 
-        double xVel = xpos - xposPrev;
-        double yVel = ypos - yposPrev;
+            double xVel = xpos - xposPrev;
+            double yVel = ypos - yposPrev;
 
-        xposPrev = xpos;
-        yposPrev = ypos;
+            xposPrev = xpos;
+            yposPrev = ypos;
 
-        r = 0.5 + sin(colorBase);
-        g = 0.5 + sin(colorBase + 2);
-        b = 0.5 + sin(colorBase + 4);
+            r = 0.5 + sin(colorBase);
+            g = 0.5 + sin(colorBase + 2);
+            b = 0.5 + sin(colorBase + 4);
 
-        // Splat the ink into both density and velocity field (show the ink and also inject a velocity)
-        gaussianSplat(density.read, density.write, xpos, ypos, INK_SPLAT_SIZE, r, g, b);
-        swapVectorFields(&density);
+            // Splat the ink into both density and velocity field (show the ink and also inject a velocity)
+            gaussianSplat(density.read, density.write, xpos, ypos, INK_SPLAT_SIZE, r, g, b);
+            swapVectorFields(&density);
 
-        splat(velocity.read, velocity.write, xpos, ypos, VELOCITY_SPLAT_SIZE, xVel * 4, yVel * 4, 0);
-        swapVectorFields(&velocity);
+            splat(velocity.read, velocity.write, xpos, ypos, VELOCITY_SPLAT_SIZE, xVel * 4, yVel * 4, 0);
+            swapVectorFields(&velocity);
 
-        checkBoundary(velocity.read, velocity.write, viewportWidth, viewportHeight, true);
-        swapVectorFields(&velocity);
+            checkBoundary(velocity.read, velocity.write, viewportWidth, viewportHeight, true);
+            swapVectorFields(&velocity);
+        }
     }
 
     glfwDestroyWindow(window);
