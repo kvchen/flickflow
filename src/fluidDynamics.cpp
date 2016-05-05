@@ -266,24 +266,24 @@ void splat(VectorField source, VectorField output,
 
 
 void checkBoundary(VectorField field, VectorField output, int width, int height, bool isVelocity) {
-  GLuint program = shaders.boundary;
-  glUseProgram(program);
+    GLuint program = shaders.boundary;
+    glUseProgram(program);
 
-  GLint fieldLoc = glGetUniformLocation(program, "field");
-  glUniform1i(fieldLoc, 0);
+    GLint fieldLoc = glGetUniformLocation(program, "field");
+    glUniform1i(fieldLoc, 0);
 
-  GLint isVelocityLoc = glGetUniformLocation(program, "isVelocity");
-  GLint widthLoc = glGetUniformLocation(program, "width");
-  GLint heightLoc = glGetUniformLocation(program, "height");
-  glUniform1i(isVelocityLoc, (int)isVelocity);
-  glUniform1i(widthLoc, width);
-  glUniform1i(heightLoc, height);
+    GLint isVelocityLoc = glGetUniformLocation(program, "isVelocity");
+    GLint widthLoc = glGetUniformLocation(program, "width");
+    GLint heightLoc = glGetUniformLocation(program, "height");
+    glUniform1i(isVelocityLoc, (int)isVelocity);
+    glUniform1i(widthLoc, width);
+    glUniform1i(heightLoc, height);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, field.textureHandle);
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  resetState();
+    glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, field.textureHandle);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    resetState();
 }
 
 
