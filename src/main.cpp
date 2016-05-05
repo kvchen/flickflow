@@ -17,7 +17,8 @@
 #define DEFAULT_HEIGHT 450
 
 // Simulation parameters
-#define SPLAT_SIZE 400.0f
+#define INK_SPLAT_SIZE 400.0f
+#define VELOCITY_SPLAT_SIZE 22.0f
 #define FREQUENCY .3f
 #define COLOR_STEP_SIZE .02f
 
@@ -231,11 +232,11 @@ int main(int argc, char** argv) {
                 b = 0.5 + sin(cycle + 4);
 
                 // Splat the ink onto the screen by updating density field
-                splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, r, g, b);
+                gaussianSplat(density.read, density.write, xpos, ypos, INK_SPLAT_SIZE, r, g, b);
                 swapVectorFields(&density);
 
                 // Also make the fluid move with the ink just added by updating velocity field in the same way
-                splat(velocity.read, velocity.write, xpos, ypos, 200.0f, tipVelocity.x * 4, tipVelocity.y * 4, 0);
+                splat(velocity.read, velocity.write, xpos, ypos, VELOCITY_SPLAT_SIZE, tipVelocity.x * 4, tipVelocity.y * 4, 0);
                 swapVectorFields(&velocity);
 
                 // As always, enforce boundary conditions on the velocity field after changing it
@@ -257,18 +258,20 @@ int main(int argc, char** argv) {
         yposPrev = ypos;
 
         // Splat the ink into both density and velocity field (show the ink and also inject a velocity)
-        splat(density.read, density.write, xpos, ypos, SPLAT_SIZE, r / 256.0, g / 256.0, b / 256.0);
+        gaussianSplat(density.read, density.write, xpos, ypos, INK_SPLAT_SIZE, r, g, b);
         swapVectorFields(&density);
-        splat(velocity.read, velocity.write, xpos, ypos, 200.0f, xVel * 4, yVel * 4, 0);
+
+        splat(velocity.read, velocity.write, xpos, ypos, VELOCITY_SPLAT_SIZE, xVel * 4, yVel * 4, 0);
         swapVectorFields(&velocity);
+
         checkBoundary(velocity.read, velocity.write, viewportWidth, viewportHeight, true);
         swapVectorFields(&velocity);
 
         // Update variables used for pretty colors
         k = (k + COLOR_STEP_SIZE) > 32 ? 0 : k + COLOR_STEP_SIZE;
-        r = sin(FREQUENCY * k + 0) * 127 + 128;
-        g = sin(FREQUENCY * k + 2) * 127 + 128;
-        b = sin(FREQUENCY * k + 4) * 127 + 128;
+        r = 0.5 + sin(FREQUENCY * k + 0);
+        g = 0.5 + sin(FREQUENCY * k + 2);
+        b = 0.5 + sin(FREQUENCY * k + 4);
     }
 
     glfwDestroyWindow(window);

@@ -18,9 +18,5 @@ void main() {
     ivec2 coords = ivec2(gl_FragCoord.xy);
     vec4 sourceColor = texelFetch(source, coords, 0);
 
-    if (distance(coords, point) < radius) {
-        color = vec4(fillColor, 1.0);
-    } else {
-        color = sourceColor;
-    }
+    color = vec4(mix(sourceColor.xyz, fillColor, gauss(point - coords, radius)), 1.0);
 }

@@ -3,12 +3,12 @@
 
 #define SCALE 1.0f
 #define TIMESTEP 0.125f
-#define DISSIPATION 0.99
-#define VELOCITY_DISSIPATION 0.99
+#define DISSIPATION 0.996
+#define VELOCITY_DISSIPATION 0.97
 #define NUM_JACOBI_ITERATIONS 30
 #define EPSILON 2.4414e-4
-#define CURL .3
-#define VISCOSITY .01f
+#define CURL 0.3
+#define VISCOSITY 0.001f
 
 Shaders shaders;
 
@@ -19,6 +19,7 @@ void initializeShaders() {
     shaders.gradient = loadShaders("../shaders/all.vert", "../shaders/gradient.frag");
     shaders.jacobi = loadShaders("../shaders/all.vert", "../shaders/jacobi.frag");
     shaders.splat = loadShaders("../shaders/all.vert", "../shaders/splat.frag");
+    shaders.gaussianSplat = loadShaders("../shaders/all.vert", "../shaders/gaussianSplat.frag");
     shaders.vorticity = loadShaders("../shaders/all.vert", "../shaders/vorticity.frag");
     shaders.vorticityForce = loadShaders("../shaders/all.vert", "../shaders/vorticityForce.frag");
     shaders.add = loadShaders("../shaders/all.vert", "../shaders/add.frag");
@@ -245,6 +246,29 @@ void computeVorticityForce(VectorField velocity, VectorField vorticity, VectorFi
 void splat(VectorField source, VectorField output,
            int x, int y, float radius, float fillX, float fillY, float fillZ) {
     GLuint program = shaders.splat;
+    glUseProgram(program);
+
+    GLint inputLoc = glGetUniformLocation(program, "source");
+    glUniform1i(inputLoc, 0);
+
+    GLint pointLoc = glGetUniformLocation(program, "point");
+    GLint radiusLoc = glGetUniformLocation(program, "radius");
+    GLint fillColorLoc = glGetUniformLocation(program, "fillColor");
+    glUniform2f(pointLoc, x, y);
+    glUniform1f(radiusLoc, radius);
+    glUniform3f(fillColorLoc, fillX, fillY, fillZ);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, source.textureHandle);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    resetState();
+}
+
+
+void gaussianSplat(VectorField source, VectorField output,
+                   int x, int y, float radius, float fillX, float fillY, float fillZ) {
+    GLuint program = shaders.gaussianSplat;
     glUseProgram(program);
 
     GLint inputLoc = glGetUniformLocation(program, "source");
