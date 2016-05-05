@@ -21,9 +21,7 @@ void main() {
     ivec2 offset = ivec2(0, 0);
 
     if (x == 0 || x == width - 1 || y == 0 || y == height - 1) { // At a boundary
-        if (isVelocity) {
-            scale = -1.0;
-        }
+        scale = 0.0;
 
         if (x == 0) {
             offset = ivec2(1, 0);
