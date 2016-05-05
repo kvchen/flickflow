@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
                 break;
             case VELOCITY:
                 glBindTexture(GL_TEXTURE_2D, velocity.read.textureHandle);
-                glUniform1f(maxValLoc, 128.0);
+                glUniform1f(maxValLoc, 32.0);
                 glUniform3f(biasLoc, 0.5, 0.5, 0.5);
                 break;
             case PRESSURE:
@@ -180,12 +180,12 @@ int main(int argc, char** argv) {
             case DIVERGENCE:
                 glBindTexture(GL_TEXTURE_2D, divergence.read.textureHandle);
                 glUniform1f(maxValLoc, 1.0);
-                glUniform3f(biasLoc, 0.0, 0.0, 0.0);
+                glUniform3f(biasLoc, 0.5, 0.5, 0.5);
                 break;
             case VORTICITY:
                 glBindTexture(GL_TEXTURE_2D, vorticity.read.textureHandle);
-                glUniform1f(maxValLoc, 1.0);
-                glUniform3f(biasLoc, 0.0, 0.0, 0.0);
+                glUniform1f(maxValLoc, 4.0);
+                glUniform3f(biasLoc, 0.5, 0.5, 0.5);
                 break;
         }
 
