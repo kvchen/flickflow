@@ -4,6 +4,10 @@
 
 FlickFlow is an incompressible fluid simulation written OpenGL, with bindings to the Leap motion SDK for additional interactivity. [Here](https://docs.google.com/presentation/d/1Ha1kNUi-22188_0rZ7o7jt-xS9Eb8eh20hNoLjJnnEQ) is a presentation detailing a high-level overview of how it works.
 
+![](https://cloud.githubusercontent.com/assets/4731228/15037605/6d830dde-1251-11e6-8736-c59e1b8cf8da.gif)
+
+![](https://cloud.githubusercontent.com/assets/4731228/15037631/c5f382a0-1251-11e6-89c8-8a94472ca024.gif)
+
 ## Installation
 
 The build process has only been tested on Mac OS X (>=10.11). It should be trivially portable to Linux, but this project was not written with Windows in mind. No Visual Studio build files were created (if you do create one, please submit a pull request!).
