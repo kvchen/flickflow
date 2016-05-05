@@ -13,6 +13,7 @@
 Shaders shaders;
 
 void initializeShaders() {
+    shaders.add = loadShaders("../shaders/all.vert", "../shaders/add.frag");
     shaders.advect = loadShaders("../shaders/all.vert", "../shaders/advect.frag");
     shaders.boundary = loadShaders("../shaders/all.vert", "../shaders/boundary.frag");
     shaders.divergence = loadShaders("../shaders/all.vert", "../shaders/divergence.frag");
@@ -22,7 +23,6 @@ void initializeShaders() {
     shaders.gaussianSplat = loadShaders("../shaders/all.vert", "../shaders/gaussianSplat.frag");
     shaders.vorticity = loadShaders("../shaders/all.vert", "../shaders/vorticity.frag");
     shaders.vorticityForce = loadShaders("../shaders/all.vert", "../shaders/vorticityForce.frag");
-    shaders.add = loadShaders("../shaders/all.vert", "../shaders/add.frag");
 }
 
 

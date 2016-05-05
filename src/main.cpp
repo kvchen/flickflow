@@ -269,9 +269,10 @@ int main(int argc, char** argv) {
 
         // Update variables used for pretty colors
         k = (k + COLOR_STEP_SIZE) > 32 ? 0 : k + COLOR_STEP_SIZE;
-        r = 0.5 + sin(FREQUENCY * k + 0);
-        g = 0.5 + sin(FREQUENCY * k + 2);
-        b = 0.5 + sin(FREQUENCY * k + 4);
+        float cycle = FREQUENCY * k;
+        r = 0.5 + sin(cycle);
+        g = 0.5 + sin(cycle + 2);
+        b = 0.5 + sin(cycle+ 4);
     }
 
     glfwDestroyWindow(window);
