@@ -48,13 +48,18 @@ void simulate(Slab velocity, Slab density, Slab pressure, Slab diffusion, Slab d
     swapVectorFields(&density);
 
     // --- Diffusion ---
+    // Make a copy of the velocity field and put it into diffusion field.
     fillVectorField(diffusion.read, 0);
     addFields(diffusion.read, velocity.read, diffusion.write, 1.0, 1.0);
     swapVectorFields(&diffusion);
+
+    // Jacobi iterations to estimate diffusion field
     for (int i = 0; i < NUM_JACOBI_ITERATIONS; i++) {
       computeJacobi(diffusion.read, diffusion.read, diffusion.write, 1.0, 5.0);
       swapVectorFields(&diffusion);
     }
+
+    // Add back into velocity field with VISCOSITY scalar
     addFields(velocity.read, diffusion.read, velocity.write, 1.0, VISCOSITY);
     swapVectorFields(&velocity);
 
