@@ -8,6 +8,7 @@
 #define NUM_JACOBI_ITERATIONS 30
 #define EPSILON 2.4414e-4
 #define CURL .3
+#define VISCOSITY .01f
 
 Shaders shaders;
 
@@ -20,6 +21,7 @@ void initializeShaders() {
     shaders.splat = loadShaders("../shaders/all.vert", "../shaders/splat.frag");
     shaders.vorticity = loadShaders("../shaders/all.vert", "../shaders/vorticity.frag");
     shaders.vorticityForce = loadShaders("../shaders/all.vert", "../shaders/vorticityForce.frag");
+    shaders.add = loadShaders("../shaders/all.vert", "../shaders/add.frag");
 }
 
 
@@ -35,7 +37,7 @@ static void resetState() {
 }
 
 
-void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab divergence, Slab vorticity,
+void simulate(Slab velocity, Slab density, Slab pressure, Slab diffusion, Slab divergence, Slab vorticity,
               int width, int height) {
     // --- Advection ---
     advect(velocity.read, velocity.read, velocity.write, width, height, SCALE, TIMESTEP, VELOCITY_DISSIPATION);
@@ -45,7 +47,16 @@ void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab
     advect(velocity.read, density.read, density.write, width, height, SCALE, TIMESTEP, DISSIPATION);
     swapVectorFields(&density);
 
-    // TODO: --- Diffusion ---
+    // --- Diffusion ---
+    fillVectorField(diffusion.read, 0);
+    addFields(diffusion.read, velocity.read, diffusion.write, 1.0, 1.0);
+    swapVectorFields(&diffusion);
+    for (int i = 0; i < NUM_JACOBI_ITERATIONS; i++) {
+      computeJacobi(diffusion.read, diffusion.read, diffusion.write, 1.0, 5.0);
+      swapVectorFields(&diffusion);
+    }
+    addFields(velocity.read, diffusion.read, velocity.write, 1.0, VISCOSITY);
+    swapVectorFields(&velocity);
 
     // --- Vorticity confinement ---
     computeVorticity(velocity.read, vorticity.read, width, height, SCALE);
@@ -157,10 +168,13 @@ void computeJacobi(VectorField pressure, VectorField divergence, VectorField out
     glUniform1i(pressureLoc, 0);
     glUniform1i(divergenceLoc, 1);
 
+
     GLint alphaLoc = glGetUniformLocation(program, "alpha");
     GLint rBetaLoc = glGetUniformLocation(program, "rBeta");
+    // GLint scaleLoc = glGetUniformLocation(program, "scale");
     glUniform1f(alphaLoc, alpha);
     glUniform1f(rBetaLoc, 1.0 / beta);
+    // glUniform1i(scaleLoc, scale);
 
     glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
     glActiveTexture(GL_TEXTURE0);
@@ -263,6 +277,30 @@ void checkBoundary(VectorField field, VectorField output, int width, int height,
   glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, field.textureHandle);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  resetState();
+}
+
+
+void addFields(VectorField a, VectorField b, VectorField output, float scaleA=1.0, float scaleB=1.0) {
+  GLuint program = shaders.add;
+  glUseProgram(program);
+
+  GLint aLoc = glGetUniformLocation(program, "a");
+  GLint bLoc = glGetUniformLocation(program, "b");
+  glUniform1i(aLoc, 0);
+  glUniform1i(bLoc, 1);
+
+  GLint scaleALoc = glGetUniformLocation(program, "scaleA");
+  GLint scaleBLoc = glGetUniformLocation(program, "scaleB");
+  glUniform1f(scaleALoc, scaleA);
+  glUniform1f(scaleBLoc, scaleB);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, output.handle);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, a.textureHandle);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, b.textureHandle);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   resetState();
 }

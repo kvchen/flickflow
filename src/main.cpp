@@ -22,7 +22,7 @@
 #define COLOR_STEP_SIZE .02f
 
 int viewportWidth, viewportHeight;
-Slab velocity, density, pressure, temperature, divergence, vorticity;
+Slab velocity, density, pressure, diffusion, divergence, vorticity;
 
 
 enum DisplayMode {
@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
     density = createSlab(viewportWidth, viewportHeight, 3);
     velocity = createSlab(viewportWidth, viewportHeight, 2);
     pressure = createSlab(viewportWidth, viewportHeight, 1);
-    temperature = createSlab(viewportWidth, viewportHeight, 1);
+    diffusion = createSlab(viewportWidth, viewportHeight, 1);
     divergence = createSlab(viewportWidth, viewportHeight, 3);
     vorticity = createSlab(viewportWidth, viewportHeight, 2);
 
@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
 
     while (!glfwWindowShouldClose(window)) {
         // Run a step of the simulation
-        simulate(velocity, density, pressure, temperature, divergence, vorticity, viewportWidth, viewportHeight);
+        simulate(velocity, density, pressure, diffusion, divergence, vorticity, viewportWidth, viewportHeight);
 
         // Render the textures to the window framebuffer
         glUseProgram(visualize);

@@ -2,6 +2,7 @@
 
 
 typedef struct Shaders_ {
+    GLuint add;
     GLuint advect;
     GLuint boundary;
     GLuint divergence;
@@ -14,7 +15,7 @@ typedef struct Shaders_ {
 
 void initializeShaders();
 
-void simulate(Slab velocity, Slab density, Slab pressure, Slab temperature, Slab divergence, Slab vorticity,
+void simulate(Slab velocity, Slab density, Slab pressure, Slab diffusion, Slab divergence, Slab vorticity,
               int width, int height);
 void advect(VectorField velocity, VectorField advected, VectorField output,
             int width, int height, float scale, float timestep, float dissipation);
@@ -31,3 +32,4 @@ void computeVorticityForce(VectorField velocity, VectorField vorticity, VectorFi
 void splat(VectorField source, VectorField output,
            int x, int y, float radius, float fillX, float fillY, float fillZ);
 void checkBoundary(VectorField velocity, VectorField output, int width, int height, bool isVelocity);
+void addFields(VectorField a, VectorField b, VectorField output, float scaleA, float scaleB);
