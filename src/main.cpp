@@ -50,19 +50,23 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if (action == GLFW_PRESS) {
         switch(key) {
             case(GLFW_KEY_1):
-                std::cout << "Switched to density mode" << std::endl;
+                std::cout << "Visualizing ink" << std::endl;
                 mode = DENSITY;
                 break;
             case(GLFW_KEY_2):
+                std::cout << "Visualizing velocity" << std::endl;
                 mode = VELOCITY;
                 break;
             case(GLFW_KEY_3):
+                std::cout << "Visualizing pressure" << std::endl;
                 mode = PRESSURE;
                 break;
             case(GLFW_KEY_4):
+                std::cout << "Visualizing divergence" << std::endl;
                 mode = DIVERGENCE;
                 break;
             case(GLFW_KEY_5):
+                std::cout << "Visualizing vorticity" << std::endl;
                 mode = VORTICITY;
                 break;
             default:
