@@ -23,3 +23,17 @@ $ make
 $ ./flickflow
 ```
 
+## Usage
+
+Simply use the mouse or Leap motion to interact with the simulation. Use the numbers 1-5 to switch between different visualization modes:
+
+1. Dye
+2. Velocity
+3. Pressure
+4. Divergence
+5. Vorticity
+
+![](https://cloud.githubusercontent.com/assets/4731228/15038075/a3a7552e-1255-11e6-865f-ff56dcaa4058.gif)
+
+Further simulation constants can be set inside of `fluidDynamics.cpp`. Interesting parameters include `DISSIPATION` and `VELOCITY_DISSIPATION`, which control how long ink stays on the screen.
+
