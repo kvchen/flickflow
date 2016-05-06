@@ -2,7 +2,7 @@
 
 ## Description
 
-FlickFlow is an incompressible fluid simulation written in OpenGL, with bindings to the Leap motion SDK for additional interactivity. A high-level overview of how our simulation works is detailed in our [class presentation](https://docs.google.com/presentation/d/1Ha1kNUi-22188_0rZ7o7jt-xS9Eb8eh20hNoLjJnnEQ/edit?usp=sharing).
+FlickFlow is an incompressible fluid simulation written in OpenGL, with bindings to the Leap motion SDK for additional interactivity. A high-level overview of how our simulation works is detailed in our [class presentation](https://docs.google.com/presentation/d/1Ha1kNUi-22188_0rZ7o7jt-xS9Eb8eh20hNoLjJnnEQ/edit?usp=sharing). A higher-resolution and higher-framerate [WebM video is also available here](https://fat.gfycat.com/CoordinatedCloudyCheetah.webm).
 
 ![](https://cloud.githubusercontent.com/assets/4731228/15039261/6f7eba3e-1260-11e6-87ec-3ed430fe0429.gif)
 
@@ -36,4 +36,3 @@ Simply use the mouse or Leap motion to interact with the simulation. Use the num
 5. Vorticity
 
 Further simulation constants can be set inside of `fluidDynamics.cpp`. Interesting parameters include `DISSIPATION` and `VELOCITY_DISSIPATION`, which control how long ink stays on the screen, along with `CURL` and `VISCOSITY`, which govern the vorticity forces in the fluid. `INK_SPLAT_SIZE` and `VELOCITY_SPLAT_SIZE` can also be adjusted in `main.cpp` to change the size of the ink and velocity splats created through interactions.
-
